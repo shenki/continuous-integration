@@ -24,6 +24,7 @@ apt-get install -y -qq \
     git \
     gnupg \
     libssl-dev \
+    libelf-dev \
     make \
     openssl \
     >/dev/null
