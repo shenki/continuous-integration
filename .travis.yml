@@ -48,6 +48,6 @@ script:
         --rm \
         --workdir /travis \
         --volume ${TRAVIS_BUILD_DIR}:/travis \
-        debian:sid /bin/bash -c './debian-setup.sh && ./driver.sh && ccache -s'
+        debian:sid /bin/bash -c './debian-setup.sh && travis_wait 60 ./driver.sh && ccache -s'
 after_script:
   - sleep 1
