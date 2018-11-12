@@ -8,83 +8,13 @@ matrix:
       env: ARCH=arm32_v6
     - name: "ARCH=arm32_v7"
       env: ARCH=arm32_v7
-    - name: "ARCH=arm64 LD=ld.lld"
-      env: ARCH=arm64 LD=ld.lld-8
-    - name: "ARCH=ppc32"
-      env: ARCH=ppc32
-    - name: "ARCH=ppc64le"
-      env: ARCH=ppc64le
-    - name: "ARCH=x86_64"
-      env: ARCH=x86_64
-    # linux (cron only)
-    - name: "ARCH=arm64"
-      env: ARCH=arm64
-      if: type = cron
     # linux-next (cron only)
     - name: "ARCH=arm32_v5 REPO=linux-next"
       env: ARCH=arm32_v5 REPO=linux-next
-      if: type = cron
     - name: "ARCH=arm32_v6 REPO=linux-next"
       env: ARCH=arm32_v6 REPO=linux-next
-      if: type = cron
     - name: "ARCH=arm32_v7 REPO=linux-next"
       env: ARCH=arm32_v7 REPO=linux-next
-      if: type = cron
-    - name: "ARCH=arm64 REPO=linux-next"
-      env: ARCH=arm64 REPO=linux-next
-      if: type = cron
-    - name: "ARCH=arm64 LD=ld.lld REPO=linux-next"
-      env: ARCH=arm64 LD=ld.lld-8 REPO=linux-next
-      if: type = cron
-    - name: "ARCH=ppc32  REPO=linux-next"
-      env: ARCH=ppc32 REPO=linux-next
-      if: type = cron
-    - name: "ARCH=ppc64le  REPO=linux-next"
-      env: ARCH=ppc64le REPO=linux-next
-      if: type = cron
-    - name: "ARCH=x86_64 REPO=linux-next"
-      env: ARCH=x86_64 REPO=linux-next
-      if: type = cron
-    # stable
-    - name: "ARCH=arm REPO=4.19"
-      env: ARCH=arm REPO=4.19
-      if: type = cron
-    - name: "ARCH=arm64 REPO=4.19"
-      env: ARCH=arm64 REPO=4.19
-      if: type = cron
-    - name: "ARCH=ppc64le REPO=4.19"
-      env: ARCH=ppc64le REPO=4.19
-      if: type = cron
-    - name: "ARCH=x86_64 REPO=4.19"
-      env: ARCH=x86_64 REPO=4.19
-      if: type = cron
-    - name: "ARCH=arm REPO=4.14"
-      env: ARCH=arm REPO=4.14
-      if: type = cron
-    - name: "ARCH=arm64 REPO=4.14"
-      env: ARCH=arm64 REPO=4.14
-      if: type = cron
-    - name: "ARCH=ppc64le REPO=4.14"
-      env: ARCH=ppc64le REPO=4.14
-      if: type = cron
-    - name: "ARCH=x86_64 REPO=4.14"
-      env: ARCH=x86_64 REPO=4.14
-      if: type = cron
-    - name: "ARCH=arm REPO=4.9"
-      env: ARCH=arm REPO=4.9
-      if: type = cron
-    - name: "ARCH=arm64 REPO=4.9"
-      env: ARCH=arm64 REPO=4.9
-      if: type = cron
-    - name: "ARCH=x86_64 REPO=4.9"
-      env: ARCH=x86_64 REPO=4.9
-      if: type = cron
-    - name: "ARCH=arm64 REPO=4.4"
-      env: ARCH=arm64 REPO=4.4
-      if: type = cron
-    - name: "ARCH=x86_64 REPO=4.4"
-      env: ARCH=x86_64 REPO=4.4
-      if: type = cron
 compiler: gcc
 os: linux
 dist: trusty
