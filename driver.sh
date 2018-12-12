@@ -170,6 +170,8 @@ build_linux() {
     [[ $ARCH != "x86_64" ]] && cat ../configs/tt.config >> .config
     # Enable KASLR for arm64 as it's not yet part of the defconfig
     [[ $ARCH == "arm64" ]] && cat ../configs/kaslr.config >> .config
+    # Disable ftrace on arm32: https://github.com/ClangBuiltLinux/linux/issues/35
+    [[ $ARCH == "arm" ]] && ./scripts/config -d CONFIG_FTRACE
   fi
   # Make sure we build with CONFIG_DEBUG_SECTION_MISMATCH so that the
   # full warning gets printed and we can file and fix it properly.
