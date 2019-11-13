@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+echo "MACHINE: $MACHINE"
+echo "   REPO: $REPO"
+echo " CONFIG: $CONFIG"
+
 set -eu
 
 setup_variables() {
@@ -27,6 +31,11 @@ setup_variables() {
 
     # torvalds/linux is the default repo if nothing is specified
     case ${REPO:=linux} in
+        "dev-"*)
+            branch=${REPO}
+            tree=openbmc
+            url=https://github.com/openbmc/linux
+            ;;
         "android"*)
             tree=common
             branch=${REPO}
@@ -48,117 +57,46 @@ setup_variables() {
     esac
     [[ -z "${url:-}" ]] && url=git://git.kernel.org/pub/scm/linux/kernel/git/${owner}/${tree}.git
 
-    SUBARCH=${ARCH}
-    case ${SUBARCH} in
-        "arm32_v5")
-            config=multi_v5_defconfig
+    case ${MACHINE} in
+        "ast2400")
             make_target=zImage
+            qemu="qemu-system-arm"
+            qemu_cmdline=(-machine palmetto-bmc
+                -no-reboot
+                -net "nic,model=ftgmac100,netdev=netdev1" -netdev "user,id=netdev1"
+                -dtb "${tree}/arch/arm/boot/dts/aspeed-bmc-opp-palmetto.dtb"
+                -initrd "images/arm/rootfs.cpio")
+            export SUBARCH=arm32_v5
             export ARCH=arm
             export CROSS_COMPILE=arm-linux-gnueabi-
             ;;
 
-        "arm32_v6")
-            config=aspeed_g5_defconfig
+        "ast2500")
             make_target=zImage
-            timeout=4 # This architecture needs a bit of a longer timeout due to some flakiness on Travis
+            qemu="qemu-system-arm"
+            qemu_cmdline=(-machine romulus-bmc
+                -no-reboot
+                -net "nic,model=ftgmac100,netdev=netdev1" -netdev "user,id=netdev1"
+                -dtb "${tree}/arch/arm/boot/dts/aspeed-bmc-opp-romulus.dtb"
+                -initrd "images/arm/rootfs.cpio")
+            export SUBARCH=arm32_v6
             export ARCH=arm
             export CROSS_COMPILE=arm-linux-gnueabi-
             ;;
 
-        "arm32_v7")
-            config=multi_v7_defconfig
+        "ast2600")
             make_target=zImage
+            qemu="qemu-system-arm"
+            qemu_cmdline=(-machine ast2600-evb
+                -no-reboot
+                -smp 2
+                -net "nic,model=ftgmac100,netdev=netdev1" -netdev "user,id=netdev1"
+                -dtb "${tree}/arch/arm/boot/dts/aspeed-ast2600-evb.dtb"
+                -initrd "images/arm/rootfs.cpio")
+                -append "console=ttyS4 rootwait root/dev/mmcblk0")
+            export SUBARCH=arm32_v7
             export ARCH=arm
             export CROSS_COMPILE=arm-linux-gnueabi-
-            ;;
-
-        "arm64")
-            case ${REPO} in
-                android-*)
-                    case ${branch} in
-                        *4.9-q | *4.14-stable) config=cuttlefish_defconfig ;;
-                        *) config=gki_defconfig ;;
-                    esac
-                    ;;
-                *) config=defconfig ;;
-            esac
-            make_target=Image.gz
-            timeout=5 # Bump the timeout to 5m.
-            export CROSS_COMPILE=aarch64-linux-gnu-
-            ;;
-
-        "mips")
-            config=malta_kvm_guest_defconfig
-            make_target=vmlinux
-            export ARCH=mips
-            export CROSS_COMPILE=mips-linux-gnu-
-            ;;
-
-        "mipsel")
-            config=malta_kvm_guest_defconfig
-            make_target=vmlinux
-            export ARCH=mips
-            export CROSS_COMPILE=mipsel-linux-gnu-
-            ;;
-
-        "ppc32")
-            config=ppc44x_defconfig
-            make_target=uImage
-            export ARCH=powerpc
-            export CROSS_COMPILE=powerpc-linux-gnu-
-            ;;
-
-        "ppc64")
-            config=pseries_defconfig
-            make_target=vmlinux
-            export ARCH=powerpc
-            export CROSS_COMPILE=powerpc64-linux-gnu-
-            ;;
-
-        "ppc64le")
-            config=powernv_defconfig
-            make_target=zImage.epapr
-            export ARCH=powerpc
-            export CROSS_COMPILE=powerpc64le-linux-gnu-
-            ;;
-
-        "riscv")
-            config=defconfig
-            make_target=Image
-            export CROSS_COMPILE=riscv64-linux-gnu-
-            ;;
-
-        "s390")
-            BOOT=false
-            config=defconfig
-            make_target=bzImage
-            export CROSS_COMPILE=s390x-linux-gnu-
-
-            # llvm-objcopy: error: invalid output format: 'elf64-s390'
-            # https://github.com/llvm/llvm-project/blob/llvmorg-11-init/llvm/tools/llvm-objcopy/CopyConfig.cpp#L242-L275
-            OBJCOPY=${CROSS_COMPILE}objcopy
-            OBJDUMP=${CROSS_COMPILE}objdump
-            ;;
-
-        "x86")
-            config=i386_defconfig
-            make_target=bzImage
-            export ARCH=i386
-            ;;
-
-        "x86_64")
-            case ${REPO} in
-                android-*)
-                    case ${branch} in
-                        *4.9-q | *4.14-stable) config=x86_64_cuttlefish_defconfig ;;
-                        *) config=gki_defconfig ;;
-                    esac
-                    ;;
-                *)
-                    config=defconfig
-                    ;;
-            esac
-            make_target=bzImage
             ;;
 
         # Unknown arch, error out
@@ -168,6 +106,9 @@ setup_variables() {
             ;;
     esac
     export ARCH=${ARCH}
+
+    kernel_image=${tree}/arch/arm/boot/${make_target}
+    config=${CONFIG}
 }
 
 # Clone/update the boot-utils
@@ -414,8 +355,15 @@ build_linux() {
 }
 
 boot_qemu() {
-    ${BOOT:=true} || return 0
-    ./boot-utils/boot-qemu.sh -a "${SUBARCH}" -k "${tree}" -t "${timeout:-2}"m
+    test -e "${kernel_image}"
+    qemu=(timeout "${timeout:-2}"m
+        unbuffer
+        "${qemu}"
+        "${qemu_cmdline[@]}"
+        -display none
+        -serial mon:stdio
+        -kernel "${kernel_image}")
+    "${qemu[@]}"
 }
 
 setup_variables "${@}"
