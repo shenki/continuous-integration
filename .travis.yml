@@ -1,4 +1,5 @@
 language: cpp
+dist: bionic
 jobs:
   include:
     # linus
@@ -68,7 +69,7 @@ script:
         --rm \
         --workdir /travis \
         --volume ${TRAVIS_BUILD_DIR}:/travis \
-        clangbuiltlinux/ubuntu:llvm${LLVM_VERSION:-12}-latest /bin/bash -c './env-setup.sh && ./driver.sh && ccache -s'
+        shenki/kernel-build:llvm${LLVM_VERSION:-12}-latest /bin/bash -c './env-setup.sh && ./driver.sh && ccache -s'
 after_script:
   - sleep 1
 notifications:
