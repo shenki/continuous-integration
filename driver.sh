@@ -92,8 +92,8 @@ setup_variables() {
                 -smp 2
                 -net "nic,model=ftgmac100,netdev=netdev1" -netdev "user,id=netdev1"
                 -dtb "${tree}/arch/arm/boot/dts/aspeed-ast2600-evb.dtb"
-                -initrd "images/arm/rootfs.cpio")
-                -append "console=ttyS4 rootwait root/dev/mmcblk0")
+                -drive "file=images/arm/rootfs.ext4.qcow2,if=sd,index=2"
+                -append "console=ttyS4 rootwait root=/dev/mmcblk0")
             export SUBARCH=arm32_v7
             export ARCH=arm
             export CROSS_COMPILE=arm-linux-gnueabi-
@@ -346,6 +346,8 @@ build_linux() {
     # Make sure we build with CONFIG_DEBUG_SECTION_MISMATCH so that the
     # full warning gets printed and we can file and fix it properly.
     ./scripts/config -e DEBUG_SECTION_MISMATCH
+    # Upstream mutli_v7 lacks the ASPEED SDHCI driver which is used for booting
+    [[ ${config} == "multi_v7_defconfig" ]] && ./scripts/config -e MMC_SDHCI_OF_ASPEED
     mako_reactor olddefconfig &>/dev/null
     mako_reactor ${make_target}
     [[ $ARCH =~ arm ]] && mako_reactor dtbs
