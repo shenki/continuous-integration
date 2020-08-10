@@ -33,7 +33,7 @@ setup_variables() {
     case ${REPO:=linux} in
         "dev-"*)
             branch=${REPO}
-            tree=openbmc
+            tree=openbmc-${REPO}
             url=https://github.com/openbmc/linux
             ;;
         "android"*)
@@ -314,7 +314,7 @@ build_linux() {
         git fetch --depth=1 ${url} ${branch:=master}
         git reset --hard FETCH_HEAD
     else
-        git clone --depth=1 -b ${branch:=master} --single-branch ${url}
+        git clone --depth=1 -b ${branch:=master} --single-branch ${url} ${tree}
         cd ${tree}
     fi
 
