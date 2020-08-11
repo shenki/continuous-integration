@@ -14,14 +14,14 @@ jobs:
     - name: "multi v5 on ast2400, linus"
       env: MACHINE=ast2400 CONFIG=multi_v5_defconfig
 
-    # openbmc dev-5.7
-    - name: "ast2600, openbmc 5.7"
-      env: MACHINE=ast2600 CONFIG=aspeed_g5_defconfig REPO=dev-5.7
-    - name: "ast2500, openbmc 5.7"
-      env: MACHINE=ast2500 CONFIG=aspeed_g5_defconfig REPO=dev-5.7
+    # openbmc dev-5.8
+    - name: "ast2600, openbmc 5.8"
+      env: MACHINE=ast2600 CONFIG=aspeed_g5_defconfig REPO=dev-5.8
+    - name: "ast2500, openbmc 5.8"
+      env: MACHINE=ast2500 CONFIG=aspeed_g5_defconfig REPO=dev-5.8
       if: type = cron
-    - name: "ast2400, openbmc 5.7"
-      env: MACHINE=ast2400 CONFIG=aspeed_g4_defconfig REPO=dev-5.7
+    - name: "ast2400, openbmc 5.8"
+      env: MACHINE=ast2400 CONFIG=aspeed_g4_defconfig REPO=dev-5.8
       if: type = cron
 
     # openbmc dev-5.4
